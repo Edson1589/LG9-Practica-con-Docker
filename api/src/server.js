@@ -10,7 +10,10 @@ app.use(express.json());
 
 app.use('./routes/users.js', usersRoutes);
 
-
+// Endpoint GET /health
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'OK' });
+});
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);

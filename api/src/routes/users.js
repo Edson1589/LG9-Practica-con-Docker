@@ -2,13 +2,8 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/db');
 
-// Endpoint GET /health
-router.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
 // Endpoint GET /users
-router.get('/users', async (req, res) => {
+router.get('/users', async (_req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM users ORDER BY id ASC');
     res.json(rows);
