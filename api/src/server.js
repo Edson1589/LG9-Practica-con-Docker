@@ -10,11 +10,20 @@ app.use(express.json());
 
 app.use('./routes/users.js', usersRoutes);
 
-// Endpoint para comprobar que la API está funcionando.
-app.get("/health", (_req, res) => {
-  res.json({
-    status: "ok",
-  });
+// Endpoint GET /health
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+// Endpoint GET /users
+app.get('/users', async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM users ORDER BY id ASC');
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al consultar usuarios' });
+  }
 });
 
 app.listen(PORT, () => {
