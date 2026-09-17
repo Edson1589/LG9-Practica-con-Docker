@@ -3,9 +3,9 @@ const router = express.Router();
 const pool = require('../config/db');
 
 // Endpoint GET /users
-router.get('/users', async (_req, res) => {
+router.get('/', async (_req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM users ORDER BY id ASC');
+    const { rows } = await pool.query('SELECT * FROM users');
     res.json(rows);
   } catch (err) {
     console.error(err);

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const app = express();
 
@@ -8,7 +9,7 @@ const PORT = Number(process.env.API_PORT) || 3000;
 // Permite recibir JSON en las peticiones.
 app.use(express.json());
 
-app.use('./routes/users.js', usersRoutes);
+app.use('/users', usersRoutes);
 
 // Endpoint GET /health
 app.get('/health', (_req, res) => {
