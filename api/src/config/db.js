@@ -11,4 +11,20 @@ const pool = new Pool({
   database: process.env.POSTGRES_DB,
 });
 
-module.exports = pool;
+// Crear la tabla users si todavia no existe
+async function initializeDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(255) NOT NULL
+    );
+  `);
+
+  console.log("Base de datos inicializada correctamente.")
+}
+
+module.exports = {
+  pool,
+  initializeDatabase
+};
