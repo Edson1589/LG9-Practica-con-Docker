@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+require("dotenv").config();
 
 // Configuración de la conexión con PostgreSQL.
 // Todos los valores importantes vienen de variables de entorno.
