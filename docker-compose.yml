@@ -1,46 +1,90 @@
-version: '3.8'
-
+# Seccion que define los contenedores que se van a ejecutar
 services:
   postgres:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    restart: always
+    # Imagen oficial de PostgreSQL
+    image: postgres:17-alpine
+    # Nombre del contenedor
+    container_name: docker-ejercicio-postgres
+
+    # Credenciales de acceso a la base de datos
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+
+    # Conecta el puerto local al puerto 5432 dentro del contenedor.
+    # Permite conectarse a la base de datos usando herramientas como pgAdmin.
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    
+    # Sirve para la persistencia de datos en el host en caso de que el contenedor sea apagado o eliminado
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+    # Verifica periodicamente si la base de datos esta lista para recibir conexiones
+    healthcheck:
+      # Ejecuta el comando nativo de Postgres usando las variables de entorno configuradas
+      test: 
+        [
+          "CMD-SHELL", 
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+      # Tiempo de espera entre cada verificacion
+      interval: 5s
+      # Tiempo maximo que puede tardar el comando en responder
+      timeout: 5s
+      # Numero de fallos consecutivos antes de marcar el contenedor como "unhealthy"
+      retries: 5
+      # Tiempo de gracia inicial para permitir que el motor de Postgres arranque
+      start_period: 10s
+
+    # Conecta este servicio a una red virtual privada
     networks:
       - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
 
   api:
-    build: ./api
-    container_name: node_api
-    restart: always
-    ports:
-      - "${API_PORT}:3000"
+    # Instrucciones para compilar la imagen de la API desde cero
+    build: 
+      # Ruta donde Docker buscara el codigo fuente
+      context: ./api
+      # Nombre del archivo con las instrucciones de construccion
+      dockerfile: Dockerfile
+
+    #Nombre del contenedor
+    container_name: docker-ejercicio-api
+
+    # Variables de entorno inyectadas al codigo para que sepa como conectarse a la base de datos
     environment:
-      DB_HOST: postgres
+      API_PORT: ${API_PORT}
+      DB_HOST: ${DB_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      API_PORT: ${API_PORT}
+
+    # Expone el pureto interno de la API hacia el puerto local configurado en la variable
+    ports:
+      - "${API_PORT}:3000"
+
+    # Controla el orden de arranque de los contenedores
     depends_on:
       postgres:
+        # La API esperara a que el "healthcheck" de Postgres responda con exito antes de intentar arrancar
         condition: service_healthy
+
+    # Reinicia el contenedor automaticamente si falla o se reinicia Docker, a menos que se detenga manualmente
+    restart: unless-stopped
+
+    # Conecta la API a la misma red virtual para que pueda comunicarse con la base de datos
     networks:
       - app-network
 
+# Declaracion formal de los volumenes con nombre usados en los servicios  
 volumes:
-  pgdata:
+  postgres_data:
 
+# Declaracion y configuracion de las redes virtuales
 networks:
   app-network:
+    # Usa una red tipo "puente" que aisla los contenedores del exterior pero permite que se hablen entre ellos
     driver: bridge
