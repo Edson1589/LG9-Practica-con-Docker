@@ -14,9 +14,9 @@ router.get('/', async (_req, res) => {
 });
 
 // POST /users - Crear un usuario
-router.post('/', async (req, res) => {
+router.post('/', async (_req, res) => {
     try {
-      const { name, email } = req.body;
+      const { name, email } = _req.body;
   
       // Validar que lleguen los datos
       if (!name || !email) {
@@ -30,7 +30,6 @@ router.post('/', async (req, res) => {
   
       res.status(201).json(result.rows[0]);
     } catch (error) {
-      // 23505 = el email ya existe (si la columna es UNIQUE)
       if (error.code === '23505') {
         return res.status(409).json({ error: 'El email ya está registrado' });
       }
