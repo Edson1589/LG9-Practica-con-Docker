@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 const { initializeDatabase } = require("./config/db")
-const usersRoutes = require('./routes/users');
+const usersRoutes = require('./routes/users.routes');
 
 const PORT = Number(process.env.API_PORT) || 3000;
 
