@@ -22,7 +22,7 @@ async function initializeDatabase() {
   `);
 
   console.log("Base de datos inicializada correctamente.")
-}
+};
 
 module.exports = {
   pool,
